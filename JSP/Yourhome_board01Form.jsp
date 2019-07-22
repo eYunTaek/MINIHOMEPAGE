@@ -1,0 +1,227 @@
+<!-- 홈페이지 게시판 -->
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" import="project03.vo.*,java.util.*,project03.dao.*"%>
+<%
+	String path = request.getContextPath();
+	String name = "비회원";
+	int mem_no = 0;
+%>
+<%!
+	// 넘겨오는 값이 null인 경우에는 공백 넘기기
+	String NLStr(String param){
+		return param == null?"":param;
+	}
+	// 넘겨오는 값을 숫자형으로 전환이 필요한 경우, null 경우는 0, 그 외는 정수형 전환처리
+	int NLInt(String param){
+		int num = 0;
+		if(param != null){
+			// Integer.parseInt(param) : 숫자형 문자열을 숫자로 변환처리
+			num = Integer.parseInt(param);
+		}
+		return num;
+	}
+	double NLDbl(String param){
+		double num=0;
+		if(param!=null){
+			num = Double.parseDouble(param);
+		}
+		return num;
+	}	
+	String[] NAStr(String[] param){
+		String []ret = {""};
+		if(param!=null&&param.length>0){
+			ret = param;		
+		}
+		return ret;
+	}
+	int[] NAInt(String[] params){
+		int []ret = {0};
+		if(params!=null&&params.length>0){
+			ret = new int[params.length];
+			for(int idx=0;idx<params.length;idx++){
+				ret[idx] = Integer.parseInt(params[idx]);
+			}
+		}
+		return ret;
+	}	
+	double[] NADbl(String[] params){
+		double []ret = {0};
+		if(params!=null&&params.length>0){
+			ret = new double[params.length];
+			for(int idx=0;idx<params.length;idx++){
+				ret[idx] = Double.parseDouble(params[idx]);
+			}
+		}
+		return ret;
+	}		
+%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link href="default02.css" rel="stylesheet" type="text/css" media="all" />
+<style type="text/css">
+	#board01 {
+		width: 800px;
+		margin: 30px 30px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		border-top: 2px solid #444444;
+		border-bottom: 2px solid #444444;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	th, td {
+		border-bottom: 1px solid #BDBDBD;
+    	padding: 10px;
+	}
+	th {background-color: #EAEAEA;}
+	td {background-color: #FFFFFF;}
+	a {
+		color: black;
+		text-decoration: none;
+	}
+	#link {font-size: 13px;}
+	.btn {
+		weight: 70px;
+		height: 30px;
+		background-color: white;
+	}
+	input[type=text], textarea {width: 100%;}
+	input[type=file] {float: left;}
+</style>
+<%
+	MembersDAO mdao = new MembersDAO();
+	Members mem = null;
+	if(request.getParameter("mem_no") != null){
+		mem_no = NLInt(request.getParameter("mem_no"));
+		name =  mdao.getMemNo(mem_no).getMem_name();
+	}
+	if(session.getAttribute("mem") != null){
+		mem = (Members)session.getAttribute("mem");
+	}
+%>
+<%
+	String title = NLStr(request.getParameter("title"));
+	String content = NLStr(request.getParameter("content"));
+	String pubyn = NLStr(request.getParameter("pubyn"));
+	String proc = NLStr(request.getParameter("proc"));
+	int board_memno = mem.getMem_no();
+
+	boolean endInsert = false;
+	if(proc.equals("ins")){
+		Board ins = new Board(mem_no, board_memno, title, content, pubyn);
+		Board01DAO dao = new Board01DAO();
+		endInsert = dao.insertBoard01(ins);
+	}
+%>
+</head>
+
+<body>
+	<div id="page" class="container">
+		<div id="header">
+			<div id="logo">
+				<a href="Main01.html" rel="nofollow"><img
+					src="images/MainLogo.png" alt="" /></a> <br> <br> <img
+					src="images/pic02.jpg" alt="" />
+				<h1>
+					<a href="Yourhome.jsp?mem_no=<%=mem_no%>"><%=name %></a>
+				</h1>
+				<span>1992 04.10</span>
+				<br><br>
+			</div>
+			<div id="menu">
+				<ul>
+					<li><a href="Yourhome.jsp?mem_no=<%=mem_no %>" accesskey="1" title="">Home</a></li>
+					<li class="current_page_item"><a href="Yourhome_board01.jsp?mem_no=<%=mem_no %>" accesskey="2" title="">게시판</a></li>
+					<li><a href="Yourhome_board02.jsp?mem_no=<%=mem_no %>" accesskey="3" title="">방명록</a></li>
+					
+				</ul>
+			</div>
+		</div>
+		<div id="main">
+			<div id="banner" class="title">
+				<h2><%=name %>님의 미니홈페이지 입니다.</h2>
+				<br>
+				<hr>
+			</div>
+			<div id="board01">
+				<h2>게시판</h2>
+				<p><a href="Yourhome.jsp?mem_no=<%=mem_no %>" id="link">home</a> >> <a href="Yourhome_board01.jsp?mem_no=<%=mem_no %>" id="link">게시판</a></p>
+				<form>
+				<input type="hidden" name="proc" />
+				<input type="hidden" value="<%=mem_no %>" name="mem_no"/>
+				<table>
+					<col width="30%"><col width="70%">
+					<tr>
+						<th>제목</th><td><input type="text" name="title" /></td>
+					</tr>
+					<tr>
+						<th>내용</th><td><textarea name="content" rows="10"></textarea></td>
+					</tr>
+					<tr>
+						<th>첨부파일</th><td><input type="file" name="file" /></td>
+					</tr>
+					<tr>
+						<th>공개여부</th>
+						<td><input type="radio" name="pubyn" value="Y" checked />공개&nbsp;
+							<input type="radio" name="pubyn" value="N" />비공개</td>
+					</tr>
+				</table>
+				<br>
+				<div align="center">
+					<input type="button" class="btn" id="regBtn" value="등록" />&nbsp;
+					<input type="reset" class="btn" value="초기화" />&nbsp;
+					<input type="button" class="btn" value="취소" onclick="location.href='Yourhome_board01.jsp?mem_no=<%=mem_no%>'" />
+				</div>
+				</form>
+				<br><br><br>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		// 글 등록
+		var endInsert = <%=endInsert %>;
+		if(endInsert){
+			alert("등록 완료했습니다.");
+			location.href = "Yourhome_board01.jsp?mem_no=<%=mem_no%>";
+		}
+		// 폼 검사
+		var title = document.querySelector("input[name=title]");
+		var content = document.querySelector("textarea[name=content]");
+		var result = false;
+		function formCheck(){
+			if(title.value == ""){
+				alert("제목을 입력하세요.");
+				title.focus();
+			} else if(content.value == "") {
+				alert("내용을 입력하세요.");
+				content.focus();
+			} else {
+				return true;
+			}
+		}
+		
+		window.onload = function(){
+			// 글 등록
+			var proc = document.querySelector("input[name=proc]");
+			var regBtn = document.querySelector("#regBtn");
+			regBtn.onclick = function(){
+				result = formCheck();
+				if(result){
+					if(confirm("글을 등록하시겠습니까?")){
+						proc.value = "ins";
+						document.querySelector("form").submit();
+					}
+				}
+			};
+		};
+</script>
+</body>
+</html>
