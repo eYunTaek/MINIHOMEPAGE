@@ -1,2 +1,2 @@
-# MINIHOMEPAGE
+# MiniHomepage
 MINI
